@@ -1,0 +1,43 @@
+﻿<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+
+	<!--1.配置原厂家工厂-->
+	<bean id="activeMQConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="tcp://127.0.0.1:61616"/>
+		<property name="userName" value="admin"></property>
+		<property name="password" value="admin"/>
+	</bean>
+
+
+	<!--2.配置原厂家连接池-->
+	<bean id="pooledConnectionFactoryBean" class="org.apache.activemq.pool.PooledConnectionFactoryBean">
+		<!--上面的工厂-->
+		<property name="connectionFactory" ref="activeMQConnectionFactory"/>
+		<!--连接数-->
+		<property name="maxConnections" value="10"/>
+	</bean>
+
+	<!--3.配置spring工厂-->
+	<bean id="connectionFactory" class="org.springframework.jms.connection.SingleConnectionFactory">
+		<!--原工厂-->
+		<property name="targetConnectionFactory" ref="pooledConnectionFactoryBean"/>
+	</bean>
+
+	<!--4.配置jmsTemplate-->
+
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<!--注入spring工厂-->
+		<property name="connectionFactory" ref="connectionFactory"/>
+		<!--默认发送目标-->
+		<property name="defaultDestinationName" value="productId"/>
+	</bean>
+
+
+</beans>
